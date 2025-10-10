@@ -531,3 +531,115 @@ body{
   padding: 28px;
   text-align: center;
 }
+
+/* ===== Library Modal (새 프레임워크 추가 창) ===== */
+.lib-modal-overlay{
+  position: fixed; inset: 0; z-index: 80;
+  background: rgba(0,0,0,.28);
+  backdrop-filter: blur(2px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+  animation: overlayFade .18s ease-out both;
+}
+@keyframes overlayFade { from{opacity:0} to{opacity:1} }
+
+.lib-modal{
+  width: 100%; max-width: 760px;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.18), 0 1px 0 rgba(255,255,255,.6) inset;
+  padding: 22px 22px 18px;
+  transform: translateY(6px) scale(.98);
+  animation: modalIn .22s cubic-bezier(.22,.61,.36,1) both;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: translateY(10px) scale(.985); }
+  to   { opacity: 1; transform: translateY(0)    scale(1); }
+}
+
+.lib-modal-title{
+  margin: 0 0 10px 0;
+  font-size: 20px; font-weight: 800;
+  letter-spacing: .2px; color: var(--text);
+}
+
+.lib-field{ display: flex; flex-direction: column; gap: 8px; margin: 14px 0; }
+.lib-label{ font-weight: 700; color: var(--muted); font-size: 13px; }
+
+.lib-input,
+.lib-textarea{
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 12px 14px;
+  color: var(--text);
+  font: 500 15px/1.6 Pretendard, Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans KR", sans-serif;
+  transition: border-color .15s ease, box-shadow .15s ease, background .2s ease;
+}
+.lib-input:focus,
+.lib-textarea:focus{
+  outline: none;
+  border-color: #111;
+  box-shadow: 0 0 0 3px rgba(0,0,0,.06);
+}
+.lib-textarea{
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* 오류 메시지 */
+.lib-form-error{
+  margin-top: 6px;
+  color: #b91c1c; /* 레드-700 */
+  font-size: 13px; font-weight: 700;
+}
+
+/* 버튼 줄 */
+.lib-modal-actions{
+  display: flex; gap: 10px; justify-content: flex-end;
+  margin-top: 14px;
+}
+
+/* + 카드 (추가 버튼) */
+.lib-add-card{
+  display: grid; place-items: center;
+  background: var(--elev);
+  border: 1px dashed var(--line);
+  color: var(--text);
+  border-radius: 12px;
+  min-height: 140px;
+  cursor: pointer;
+  transition: transform .12s ease, box-shadow .18s ease, background .18s ease, border-color .18s ease;
+}
+.lib-add-card:hover{
+  background: #eef0f3;
+  border-color: #d1d5db;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,.08);
+}
+.lib-add-plus{
+  font-size: 44px; line-height: 1; font-weight: 700; margin-bottom: 6px;
+}
+.lib-add-text{
+  font-size: 13px; color: var(--muted); font-weight: 700;
+}
+
+/* 그리드 기본(참고: 너가 이미 lib-grid/lib-card를 쓰고 있으면 생략 가능) */
+.lib-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 14px;
+}
+.lib-card{
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 6px 16px rgba(0,0,0,.06);
+  transition: transform .12s ease, box-shadow .18s ease;
+}
+.lib-card:hover{ transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,.08); }
+.lib-card-title{ margin: 0 0 8px 0; font-weight: 800; color: var(--text); }
+.lib-card-desc{ margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }

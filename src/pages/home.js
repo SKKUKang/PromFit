@@ -93,7 +93,6 @@ export default function Home() {
               <br />
               <p className="intro-desc">좋은 질문이 어느 때보다도 중요해진 시대. 프롬프트와 목적을 입력하세요. </p>
               <p className="intro-desc">단 한 번의 질문으로 완벽한 결과를 얻을 수 있는 프롬프트를 만들어드립니다!</p>
-              <p className="intro-desc">단 한 번의 질문으로 완벽한 결과를 얻을 수 있는 프롬프트를 만들어드립니다!</p>
             </div>
           </section>
         )}
