@@ -8,7 +8,7 @@ import './home.css';
 
 // ▼ 백엔드 호출
 async function callPromptAPI(prompt, framework) {
-  const API_URL = 'https://jodee-unlapped-rachal.ngrok-free.dev/api/prompt';
+  const API_URL = 'https://barbarously-stemless-leone.ngrok-free.dev /api/prompt';
 
   const res = await fetch(API_URL, {
     method: 'POST',
@@ -46,7 +46,7 @@ export default function Home() {
 
     (async () => {
       try {
-        const res = await fetch('https://jodee-unlapped-rachal.ngrok-free.dev/api/frameworks', {
+        const res = await fetch('https://barbarously-stemless-leone.ngrok-free.dev /api/frameworks', {
           method: 'GET',
           headers: {
             Accept: 'application/json',

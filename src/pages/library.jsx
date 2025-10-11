@@ -9,8 +9,9 @@ import React, {
 import NavBar from "../components/navBar";
 import "./home.css"; // 모노톤 변수 재사용
 
-const API_URL = "https://jodee-unlapped-rachal.ngrok-free.dev/api/frameworks";
+const API_URL = "https://barbarously-stemless-leone.ngrok-free.dev/api/frameworks";
 const NAME_LIMIT = 10;
+const CORE_FRAMEWORKS = new Set(["RTF", "TAG", "BAB", "CARE", "CO_STAR"]); // 삭제 불가 목록
 
 export default function Library() {
   const [list, setList] = useState([]);
@@ -181,7 +182,7 @@ export default function Library() {
         throw new Error(msg);
       }
 
-      // ✅ 성공: 목록 **끝에** 추가 (우측 하단 위치 유지)
+      // 성공: 목록 **끝에** 추가 (우측 하단 유지)
       setList((prev) => [
         ...prev,
         {
@@ -201,6 +202,46 @@ export default function Library() {
       setSaving(false);
     }
   }, [fwName, fwDesc, fwPrompt]);
+
+  // 삭제 (DELETE)
+  const handleDelete = useCallback(async (name) => {
+    if (CORE_FRAMEWORKS.has(name)) {
+      alert("기본 프레임워크(RTF, TAG, BAB, CARE, CO_STAR)는 삭제할 수 없습니다.");
+      return;
+    }
+    if (!window.confirm(`'${name}' 프레임워크를 삭제할까요?`)) return;
+
+    try {
+      const res = await fetch(API_URL, {
+        method: "DELETE",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true",
+        },
+        body: JSON.stringify({ framework: name }),
+      });
+
+      const ct = res.headers.get("content-type") || "";
+      const body = ct.includes("application/json")
+        ? await res.json()
+        : await res.text();
+
+      if (!res.ok) {
+        const msg =
+          typeof body === "string"
+            ? body.slice(0, 200)
+            : body?.error || "삭제 실패";
+        throw new Error(msg);
+      }
+
+      // 성공 시 목록에서 제거
+      setList((prev) => prev.filter((f) => f.framework !== name));
+    } catch (e) {
+      console.error("[Library] DELETE error:", e);
+      alert(e.message || "삭제 중 오류가 발생했습니다.");
+    }
+  }, []);
 
   // 모달 내부에서 Ctrl/Cmd+Enter로 저장
   const handleFormKeyDown = useCallback(
@@ -249,7 +290,7 @@ export default function Library() {
         {state === "done" && (
           <>
             <section className="lib-grid">
-              {/* 기존 카드들 먼저 렌더 */}
+              {/* 기존 카드들 */}
               {filtered.length === 0 ? (
                 <article className="lib-card" tabIndex={0}>
                   <h3 className="lib-card-title">결과 없음</h3>
@@ -258,19 +299,56 @@ export default function Library() {
                   </p>
                 </article>
               ) : (
-                filtered.map((fw) => (
-                  <article key={fw.framework} className="lib-card" tabIndex={0}>
-                    <div className="lib-card-head">
-                      <h3 className="lib-card-title">{fw.framework}</h3>
-                    </div>
-                    <p className="lib-card-desc">
-                      {fw.description || "설명이 없습니다."}
-                    </p>
-                  </article>
-                ))
+                filtered.map((fw) => {
+                  const protectedFw = CORE_FRAMEWORKS.has(fw.framework);
+                  return (
+                    <article key={fw.framework} className="lib-card" tabIndex={0}>
+                      <div
+                        className="lib-card-head"
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          gap: 8,
+                        }}
+                      >
+                        <h3 className="lib-card-title">{fw.framework}</h3>
+
+                        {/* 삭제 버튼 (기본 프레임워크는 비활성화) */}
+                        <button
+                          type="button"
+                          className="lib-del-btn"
+                          onClick={() => handleDelete(fw.framework)}
+                          disabled={protectedFw}
+                          title={
+                            protectedFw
+                              ? "기본 프레임워크는 삭제할 수 없습니다"
+                              : "삭제"
+                          }
+                          style={{
+                            cursor: protectedFw ? "not-allowed" : "pointer",
+                            opacity: protectedFw ? 0.4 : 1,
+                            background: "transparent",
+                            border: "1px solid var(--line)",
+                            color: "var(--muted)",
+                            borderRadius: 8,
+                            padding: "4px 8px",
+                            fontSize: 13,
+                          }}
+                        >
+                          🗑️
+                        </button>
+                      </div>
+
+                      <p className="lib-card-desc">
+                        {fw.description || "설명이 없습니다."}
+                      </p>
+                    </article>
+                  );
+                })
               )}
 
-              {/* ➕ 추가 카드: 항상 그리드의 맨 끝(우측 하단). */}
+              {/* ➕ 추가 카드: 항상 그리드의 맨 끝(우측 하단) */}
               <div
                 style={{
                   gridColumn: "1 / -1",

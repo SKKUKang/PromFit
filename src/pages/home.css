@@ -677,3 +677,22 @@ body{
 .lib-card:hover{ transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,0,0,.08); }
 .lib-card-title{ margin: 0 0 8px 0; font-weight: 800; color: var(--text); }
 .lib-card-desc{ margin: 0; color: var(--muted); font-size: 14px; line-height: 1.6; }
+
+/* 삭제 버튼 (물빠진 진홍) */
+.lib-del-btn{
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease, color .15s ease, transform .08s ease;
+}
+.lib-del-btn:hover{
+  background: rgba(220,38,38,.12) !important; 
+  border-color: rgba(220,38,38,.50) !important;
+  color: #a31616 !important;   
+}
+.lib-del-btn:active{ transform: translateY(1px) !important; }
+.lib-del-btn:disabled{
+  cursor: not-allowed;
+  opacity: .45;
+  background: rgba(220,38,38,.04);
+  border-color: rgba(220,38,38,.25);
+  color: #b91c1c;
+}
