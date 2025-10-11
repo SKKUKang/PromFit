@@ -10,6 +10,7 @@ import NavBar from "../components/navBar";
 import "./home.css"; // 모노톤 변수 재사용
 
 const API_URL = "https://jodee-unlapped-rachal.ngrok-free.dev/api/frameworks";
+const NAME_LIMIT = 10;
 
 export default function Library() {
   const [list, setList] = useState([]);
@@ -140,10 +141,17 @@ export default function Library() {
   // 저장 (POST)
   const handleSave = useCallback(async () => {
     setFormError("");
-    if (!fwName.trim() || !fwPrompt.trim()) {
+    const nameTrim = fwName.trim();
+
+    if (!nameTrim || !fwPrompt.trim()) {
       setFormError("이름(framework)과 변환 규칙(prompt_text)은 필수입니다.");
       return;
     }
+    if (nameTrim.length > NAME_LIMIT) {
+      setFormError(`이름은 최대 ${NAME_LIMIT}자까지 가능합니다.`);
+      return;
+    }
+
     try {
       setSaving(true);
       const res = await fetch(API_URL, {
@@ -154,7 +162,7 @@ export default function Library() {
           "ngrok-skip-browser-warning": "true",
         },
         body: JSON.stringify({
-          framework: fwName.trim(),
+          framework: nameTrim,
           prompt_text: fwPrompt,
           description: fwDesc,
         }),
@@ -173,16 +181,16 @@ export default function Library() {
         throw new Error(msg);
       }
 
-      // 성공: 목록 최상단에 즉시 반영(낙관적 갱신)
+      // ✅ 성공: 목록 **끝에** 추가 (우측 하단 위치 유지)
       setList((prev) => [
+        ...prev,
         {
-          framework: fwName.trim(),
+          framework: nameTrim,
           prompt_text: fwPrompt,
           author: "system",
           likes: 0,
           description: fwDesc,
         },
-        ...prev,
       ]);
 
       setShowForm(false);
@@ -241,18 +249,7 @@ export default function Library() {
         {state === "done" && (
           <>
             <section className="lib-grid">
-              {/* + 추가 카드 */}
-              <button
-                type="button"
-                className="lib-card lib-add-card"
-                onClick={openForm}
-                aria-label="나만의 프레임워크 추가"
-              >
-                <div className="lib-add-plus">＋</div>
-                <div className="lib-add-text">새 프레임워크</div>
-              </button>
-
-              {/* 기존 카드들 */}
+              {/* 기존 카드들 먼저 렌더 */}
               {filtered.length === 0 ? (
                 <article className="lib-card" tabIndex={0}>
                   <h3 className="lib-card-title">결과 없음</h3>
@@ -272,6 +269,25 @@ export default function Library() {
                   </article>
                 ))
               )}
+
+              {/* ➕ 추가 카드: 항상 그리드의 맨 끝(우측 하단). */}
+              <div
+                style={{
+                  gridColumn: "1 / -1",
+                  display: "flex",
+                  justifyContent: "flex-end",
+                }}
+              >
+                <button
+                  type="button"
+                  className="lib-card lib-add-card"
+                  onClick={openForm}
+                  aria-label="나만의 프레임워크 추가"
+                >
+                  <div className="lib-add-plus">＋</div>
+                  <div className="lib-add-text">새 프레임워크</div>
+                </button>
+              </div>
             </section>
           </>
         )}
@@ -292,13 +308,19 @@ export default function Library() {
               </h2>
 
               <label className="lib-field">
-                <span className="lib-label">이름 (framework) *</span>
+                <span className="lib-label">
+                  이름 (framework) *{" "}
+                  <small style={{ color: "var(--muted)", fontWeight: 500 }}>
+                    {fwName.length}/{NAME_LIMIT}
+                  </small>
+                </span>
                 <input
                   ref={nameInputRef}
                   className="lib-input"
                   type="text"
                   placeholder="예: MY_FRAME"
                   value={fwName}
+                  maxLength={NAME_LIMIT}
                   onChange={(e) => setFwName(e.target.value)}
                 />
               </label>

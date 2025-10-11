@@ -1,5 +1,5 @@
 // src/components/PromptInput.jsx
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useMemo } from 'react';
 
 export default function PromptInput({
   size = 'md',
@@ -7,8 +7,11 @@ export default function PromptInput({
   onChange,
   onFocus,
   onSubmit,
-  options,
-  onToggleOption,
+  options,                 // 기존 5개 boolean 상태(하위호환)
+  onToggleOption,          // (key|null) => void  기존 핸들러 그대로 사용
+  // ▼ 새 props
+  customFrameworks = [],   // ['MY_FRAME', ...] 라이브러리에서 불러온 사용자 프레임워크 이름들
+  currentFramework = null, // 현재 선택된 프레임워크 키워드 (기본/커스텀 모두)
 }) {
   const isLarge = size === 'lg';
 
@@ -16,8 +19,8 @@ export default function PromptInput({
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') onSubmit?.();
   };
 
+  // 클릭 시: 이미 선택된 키면 null(해제), 아니면 해당 키로 선택
   const toggle = (key, isSelected) => {
-    // 이미 선택돼 있으면 해제(null 전달), 아니면 해당 key 선택
     onToggleOption?.(isSelected ? null : key);
   };
 
@@ -26,26 +29,34 @@ export default function PromptInput({
   const autoResize = () => {
     const el = taRef.current;
     if (!el) return;
-    el.style.height = 'auto';                    // 리셋
-    el.style.height = `${el.scrollHeight}px`;    // 내용에 맞게 확장
+    el.style.height = 'auto';                 // 리셋
+    el.style.height = `${el.scrollHeight}px`; // 내용에 맞게 확장
   };
 
-  // 입력 시: 원래 onChange 호출 + 높이 자동 조절
   const handleChange = (e) => {
     onChange?.(e.target.value);
-    // setState 이후 렌더 전이므로, 다음 프레임에 반영되도록 requestAnimationFrame
     requestAnimationFrame(autoResize);
   };
 
-  // 외부에서 value가 바뀌는 경우(초기 로드, reset 등)도 반영
-  useEffect(() => {
-    autoResize();
-  }, [value]);
+  useEffect(() => { autoResize(); }, [value]);
+  useEffect(() => { autoResize(); }, []);
 
-  // 초기 마운트 시 최소 높이 세팅
-  useEffect(() => {
-    autoResize();
-  }, []);
+  // 기본 프레임워크 키
+  const BASE_KEYS = useMemo(() => ({
+    logical:    'TAG',
+    creative:   'CO_STAR',
+    academic:   'CARE',
+    exploratory:'BAB',
+    reliable:   'RTF',
+  }), []);
+
+  // 기본옵션의 선택여부는 currentFramework 우선, 없으면 기존 boolean로 폴백
+  const isBaseSelected = (key, fallbackBool) => {
+    const fwKey = BASE_KEYS[key];
+    return currentFramework
+      ? currentFramework === fwKey
+      : !!fallbackBool;
+  };
 
   return (
     <section className={`prompt-wrap ${isLarge ? 'lg' : 'md'}`}>
@@ -71,14 +82,17 @@ export default function PromptInput({
           <span className="options-title">원하는 세부 기능을 선택하세요!</span>
         </div>
 
-        <div className="options-grid" role="radiogroup" aria-label="단일 선택">
+        {/* 기본 프레임워크 (단일선택) */}
+        <div className="options-grid" role="radiogroup" aria-label="단일 선택 - 기본 프레임워크">
           <label className="radio-chip">
             <input
               type="radio"
-              name="prompt-option"
-              checked={options.logical}
-              readOnly                 // ← 네이티브 상태변경 차단 (경쟁 제거)
-              onClick={() => toggle('logical', options.logical)}  // ← 클릭으로만 토글 가능
+              name="prompt-option-base"
+              checked={isBaseSelected('logical', options?.logical)}
+              readOnly
+              onClick={() =>
+                toggle(BASE_KEYS.logical, isBaseSelected('logical', options?.logical))
+              }
             />
             <span>논리적</span>
           </label>
@@ -86,10 +100,12 @@ export default function PromptInput({
           <label className="radio-chip">
             <input
               type="radio"
-              name="prompt-option"
-              checked={options.creative}
-              readOnly                 // ← 네이티브 상태변경 차단 (경쟁 제거)
-              onClick={() => toggle('creative', options.creative)}  // ← 클릭으로만 토글 가능
+              name="prompt-option-base"
+              checked={isBaseSelected('creative', options?.creative)}
+              readOnly
+              onClick={() =>
+                toggle(BASE_KEYS.creative, isBaseSelected('creative', options?.creative))
+              }
             />
             <span>창의적</span>
           </label>
@@ -97,10 +113,12 @@ export default function PromptInput({
           <label className="radio-chip">
             <input
               type="radio"
-              name="prompt-option"
-              checked={options.academic}
-              readOnly                 // ← 네이티브 상태변경 차단 (경쟁 제거)
-              onClick={() => toggle('academic', options.academic)}  // ← 클릭으로만 토글 가능
+              name="prompt-option-base"
+              checked={isBaseSelected('academic', options?.academic)}
+              readOnly
+              onClick={() =>
+                toggle(BASE_KEYS.academic, isBaseSelected('academic', options?.academic))
+              }
             />
             <span>학술적</span>
           </label>
@@ -108,10 +126,12 @@ export default function PromptInput({
           <label className="radio-chip">
             <input
               type="radio"
-              name="prompt-option"
-              checked={options.exploratory}
-              readOnly                 // ← 네이티브 상태변경 차단 (경쟁 제거)
-              onClick={() => toggle('exploratory', options.exploratory)}  // ← 클릭으로만 토글 가능
+              name="prompt-option-base"
+              checked={isBaseSelected('exploratory', options?.exploratory)}
+              readOnly
+              onClick={() =>
+                toggle(BASE_KEYS.exploratory, isBaseSelected('exploratory', options?.exploratory))
+              }
             />
             <span>탐색적</span>
           </label>
@@ -119,14 +139,46 @@ export default function PromptInput({
           <label className="radio-chip">
             <input
               type="radio"
-              name="prompt-option"
-              checked={options.reliable}
-              readOnly                 // ← 네이티브 상태변경 차단 (경쟁 제거)
-              onClick={() => toggle('reliable', options.reliable)}  // ← 클릭으로만 토글 가능
+              name="prompt-option-base"
+              checked={isBaseSelected('reliable', options?.reliable)}
+              readOnly
+              onClick={() =>
+                toggle(BASE_KEYS.reliable, isBaseSelected('reliable', options?.reliable))
+              }
             />
             <span>신뢰적</span>
           </label>
         </div>
+
+        {/* 사용자 프레임워크 (단일선택) */}
+        {Array.isArray(customFrameworks) && customFrameworks.length > 0 && (
+          <>
+            <div className="options-head" style={{ marginTop: 12 }}>
+              <div className="options-inline" style={{ marginTop: 12 }}>
+                <span className="options-title">사용자 프레임워크</span>
+                <span className="options-hint">Library에서 추가한 템플릿</span>
+              </div>
+            </div>
+
+            <div className="options-grid" role="radiogroup" aria-label="단일 선택 - 사용자 프레임워크">
+              {customFrameworks.map((fw) => {
+                const selected = currentFramework === fw;
+                return (
+                  <label key={fw} className="radio-chip">
+                    <input
+                      type="radio"
+                      name="prompt-option-custom"
+                      checked={selected}
+                      readOnly
+                      onClick={() => toggle(fw, selected)}
+                    />
+                    <span>{fw}</span>
+                  </label>
+                );
+              })}
+            </div>
+          </>
+        )}
       </div>
     </section>
   );

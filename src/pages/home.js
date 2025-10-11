@@ -1,20 +1,10 @@
 // src/pages/home.js
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import NavBar from '../components/navBar';
 import PromptInput from '../components/PromptInput';
 import LoadingSection from '../components/LoadingSection';
 import ResultSection from '../components/ResultSection';
 import './home.css';
-
-// ▼ 옵션 → 프레임워크 매핑
-function optionToFramework(options) {
-  if (options?.reliable)   return 'RTF';
-  if (options?.logical)    return 'TAG';
-  if (options?.exploratory)return 'BAB';
-  if (options?.academic)   return 'CARE';
-  if (options?.creative)   return 'CO_STAR';
-  return 'TAG'; // 미선택 디폴트
-}
 
 // ▼ 백엔드 호출
 async function callPromptAPI(prompt, framework) {
@@ -39,23 +29,71 @@ export default function Home() {
   const [viewState, setViewState] = useState('idle'); // 'idle' | 'loading' | 'done'
   const [inputText, setInputText] = useState('');
   const [results, setResults] = useState([]);
-  const [options, setOptions] = useState({
-    logical: false,
-    creative: false,
-    academic: false,
-    exploratory: false,
-    reliable: false,
-  });
+
+  // ✅ 단일 선택 프레임워크 상태 (기본 프레임워크 & 사용자 프레임워크 모두 포함)
+  //   예: 'TAG' | 'RTF' | 'BAB' | 'CARE' | 'CO_STAR' | 'MY_FRAME' | null
+  const [selectedFramework, setSelectedFramework] = useState(null);
+
+  // ✅ Library에서 추가된 사용자 프레임워크 이름 목록
+  const [customFrameworks, setCustomFrameworks] = useState([]);
 
   const showIntro = useMemo(() => viewState === 'idle', [viewState]);
+
+  // 사용자 프레임워크 로드
+  useEffect(() => {
+    let isMounted = true;
+    const controller = new AbortController();
+
+    (async () => {
+      try {
+        const res = await fetch('https://jodee-unlapped-rachal.ngrok-free.dev/api/frameworks', {
+          method: 'GET',
+          headers: {
+            Accept: 'application/json',
+            'ngrok-skip-browser-warning': 'true',
+          },
+          cache: 'no-store',
+          signal: controller.signal,
+        });
+
+        const ct = res.headers.get('content-type') || '';
+        const body = ct.includes('application/json') ? await res.json() : await res.text();
+        if (!res.ok) throw new Error(typeof body === 'string' ? body : (body?.error || '목록 조회 실패'));
+        if (!ct.includes('application/json')) throw new Error('JSON이 아닌 응답입니다.');
+        if (!isMounted) return;
+
+        // ✅ 기본 5종은 제외 + 대소문자 안전 + 중복 제거
+        const RESERVED = new Set(['RTF','TAG','BAB','CARE','CO_STAR']);
+        const names = Array.isArray(body?.frameworks)
+          ? body.frameworks
+              .map(f => String(f.framework || '').trim())
+              .filter(Boolean)
+              .filter(name => !RESERVED.has(name.toUpperCase()))
+        : [];
+
+        // 중복 제거
+        const unique = Array.from(new Set(names.map(n => n.toUpperCase())))
+          .map(u => names.find(n => n.toUpperCase() === u)); // 원래 표기 유지
+
+        setCustomFrameworks(unique);
+      } catch (e) {
+        console.warn('[Home] custom frameworks fetch failed:', e);
+      }
+    })();
+
+    return () => {
+      isMounted = false;
+      controller.abort();
+    };
+  }, []);
 
   // 제출(엔터/버튼) → loading → done
   const handleSubmit = useCallback(async () => {
     if (!inputText.trim()) return;
     setViewState('loading');
 
-    const asked = inputText;                 // 당시 질문 보존
-    const framework = optionToFramework(options);
+    const asked = inputText; // 당시 질문 보존
+    const framework = selectedFramework ?? 'TAG'; // 미선택 시 TAG
 
     try {
       const converted = await callPromptAPI(asked, framework);
@@ -68,11 +106,10 @@ export default function Home() {
       setViewState('done');
     } catch (err) {
       console.error(err);
-      // 필요 시 에러 UI로 바꿔도 됨
       alert(err.message || '요청 중 오류가 발생했습니다.');
       setViewState('done');
     }
-  }, [inputText, options]);
+  }, [inputText, selectedFramework]);
 
   return (
     <div className="app-root" style={{ background: '#f8fafc', minHeight: '100vh' }}>
@@ -103,18 +140,13 @@ export default function Home() {
             value={inputText}
             onChange={setInputText}
             onSubmit={handleSubmit}
-            options={options}
-            onToggleOption={(key) =>
-              setOptions(() => key == null
-                ? { logical:false, creative:false, academic:false, exploratory:false, reliable:false }
-                : {
-                    logical: key === 'logical',
-                    creative: key === 'creative',
-                    academic: key === 'academic',
-                    exploratory: key === 'exploratory',
-                    reliable: key === 'reliable',
-                  })
-            }
+            // ▼ 기존 options는 폴백용으로만 쓰이므로 전부 false로 둠
+            options={{ logical:false, creative:false, academic:false, exploratory:false, reliable:false }}
+            // ▼ 새 props: 사용자 프레임워크/현재 선택
+            customFrameworks={customFrameworks}
+            currentFramework={selectedFramework}
+            // PromptInput에서 key 또는 null을 넘겨줌
+            onToggleOption={(key) => setSelectedFramework(key)}
           />
         )}
 
@@ -139,18 +171,10 @@ export default function Home() {
               value={inputText}
               onChange={setInputText}
               onSubmit={handleSubmit}
-              options={options}
-              onToggleOption={(key) =>
-                setOptions(() => key == null
-                  ? { logical:false, creative:false, academic:false, exploratory:false, reliable:false }
-                  : {
-                      logical: key === 'logical',
-                      creative: key === 'creative',
-                      academic: key === 'academic',
-                      exploratory: key === 'exploratory',
-                      reliable: key === 'reliable',
-                    })
-              }
+              options={{ logical:false, creative:false, academic:false, exploratory:false, reliable:false }}
+              customFrameworks={customFrameworks}
+              currentFramework={selectedFramework}
+              onToggleOption={(key) => setSelectedFramework(key)}
             />
 
             <div style={{ height: 1, background: '#eee', margin: '24px 0' }} />

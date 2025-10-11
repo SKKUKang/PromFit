@@ -164,7 +164,17 @@ body{
 }
 .options-title{ font-weight:600; color:var(--text); margin-left:6px}
 .options-hint{ color:var(--muted); font-size:12.5px; }
+/* 제목+힌트를 같은 줄에 배치 */
+.options-inline{
+  display:flex;
+  align-items: baseline;   /* 글자 기준선 맞춤 */
+  gap:10px;                /* 제목과 힌트 간격 */
+}
 
+/* 힌트가 줄 바꿈 없이 자연스럽게 따라붙도록(선택) */
+.options-hint{
+  white-space: nowrap;
+}
 .options-grid{
   display:flex; flex-wrap:wrap; gap:10px;
 }
@@ -500,15 +510,39 @@ body{
   margin: 0;
   font-size: 16px; font-weight: 800; color: var(--text);
   letter-spacing: .2px;
+
+  /* 멀티라인 클램프 핵심 */
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 1;          /* 제목 2줄 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  /* line-height와 max-height를 맞춰 두 줄 높이로 고정 */
+  line-height: 1.6;
+  max-height: calc(1.6em * 2);
+
+  /* 길~은 단어 강제 줄바꿈 보호(선택) */
+  word-break: break-word;
 }
 
 .lib-card-desc{
   margin: 0;
   color: var(--muted);
   font-size: 14px; line-height: 1.6;
+
+  /* 멀티라인 클램프 핵심 */
   display: -webkit-box;
   -webkit-box-orient: vertical;
+  -webkit-line-clamp: 6;          /* 제목 6줄 */
   overflow: hidden;
+  text-overflow: ellipsis;
+
+  /* 비 WebKit 대비(대략적 높이 제한) */
+  max-height: calc(1.6em * 6);
+
+  /* 길~은 단어 강제 줄바꿈 보호(선택) */
+  word-break: break-word;
 }
 
 .lib-error{
