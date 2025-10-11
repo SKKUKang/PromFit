@@ -701,21 +701,21 @@ body{
 @media (max-width: 720px){
   /* 로고 조금 작게 */
   .nav-logo{ 
-    height: 36px;   /* 기존 44px → 36px */
+    height: 20px;   /* 기존 44px → 20px */
   }
 
   /* 링크/액션 간격 & 폰트 축소 */
-  .nav-links{ gap: 12px; }
+  .nav-links{ gap: 10px; }
   .nav-actions{ gap: 8px; }
 
   .nav-link{
-    font-size: 14px;         /* 기존 16px → 14px */
+    font-size: 12px;         /* 기존 16px → 12px */
     padding: 5px 6px;        /* 살짝 컴팩트하게 */
   }
 
   /* 액션 버튼(로그인/회원가입 등) 폰트도 다운 */
   .btn{ 
-    font-size: 14px;         /* 기존 15~16px대 → 14px */
+    font-size: 12px;         /* 기존 15~16px대 → 12px */
     padding: 6px 10px;       /* 폭도 살짝 줄임 */
   }
 }
