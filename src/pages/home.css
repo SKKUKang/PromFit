@@ -4,6 +4,7 @@
 @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
 
+:root, html { color-scheme: light; }  /* 폼컨트롤/스크롤바 등도 라이트로 */
 :root{
   /* Monochrome Palette */
   --bg: #f7f7f8;          /* 페이지 배경(아주 연한 회색) */
@@ -717,5 +718,26 @@ body{
   .btn{ 
     font-size: 12px;         /* 기존 15~16px대 → 12px */
     padding: 6px 10px;       /* 폭도 살짝 줄임 */
+  }
+}
+
+/* 다크 선호 신호가 와도 무조건 라이트 변수로 덮어쓰기 */
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg: #f7f7f8;
+    --card: #ffffff;
+    --elev: #f3f4f6;
+    --brand: #111111;
+    --brand-600: #222222;
+    --brand-700: #333333;
+    --text: #111111;
+    --muted: #6b7280;
+    --line: #e5e7eb;
+    --success: #111111;
+    --result-max-lines: 16;
+  }
+  body{
+    background: linear-gradient(180deg, #ffffff 0%, var(--bg) 100%);
+    color: var(--text);
   }
 }
