@@ -8,7 +8,7 @@ import './home.css';
 
 // ▼ 백엔드 호출
 async function callPromptAPI(prompt, framework) {
-  const API_URL = 'https://barbarously-stemless-leone.ngrok-free.dev /api/prompt';
+  const API_URL = 'https://barbarously-stemless-leone.ngrok-free.dev/api/prompt';
 
   const res = await fetch(API_URL, {
     method: 'POST',
