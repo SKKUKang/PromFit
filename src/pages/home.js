@@ -46,7 +46,7 @@ export default function Home() {
 
     (async () => {
       try {
-        const res = await fetch('https://barbarously-stemless-leone.ngrok-free.dev /api/frameworks', {
+        const res = await fetch('https://barbarously-stemless-leone.ngrok-free.dev/api/frameworks', {
           method: 'GET',
           headers: {
             Accept: 'application/json',
