@@ -5,10 +5,11 @@ import PromptInput from '../components/PromptInput';
 import LoadingSection from '../components/LoadingSection';
 import ResultSection from '../components/ResultSection';
 import './home.css';
+import { API_BASE } from '../config';
 
 // ▼ 백엔드 호출
 async function callPromptAPI(prompt, framework) {
-  const API_URL = 'https://barbarously-stemless-leone.ngrok-free.dev/api/prompt';
+  const API_URL = `${API_BASE}/api/prompt`;
 
   const res = await fetch(API_URL, {
     method: 'POST',
@@ -46,7 +47,7 @@ export default function Home() {
 
     (async () => {
       try {
-        const res = await fetch('https://barbarously-stemless-leone.ngrok-free.dev/api/frameworks', {
+        const res = await fetch(`${API_BASE}/api/frameworks`, {
           method: 'GET',
           headers: {
             Accept: 'application/json',

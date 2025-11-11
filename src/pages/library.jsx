@@ -8,8 +8,7 @@ import React, {
 } from "react";
 import NavBar from "../components/navBar";
 import "./home.css"; // 모노톤 변수 재사용
-
-const API_URL = "https://barbarously-stemless-leone.ngrok-free.dev/api/frameworks";
+import { API_BASE } from "../config";
 const NAME_LIMIT = 10;
 const CORE_FRAMEWORKS = new Set(["RTF", "TAG", "BAB", "CARE", "CO_STAR"]); // 삭제 불가 목록
 
@@ -38,7 +37,7 @@ export default function Library() {
     (async () => {
       try {
         setState("loading");
-        const res = await fetch(API_URL, {
+        const res = await fetch(`${API_BASE}/api/frameworks`, {
           method: "GET",
           headers: {
             Accept: "application/json",
@@ -155,7 +154,7 @@ export default function Library() {
 
     try {
       setSaving(true);
-      const res = await fetch(API_URL, {
+      const res = await fetch(`${API_BASE}/api/frameworks`, {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -212,7 +211,7 @@ export default function Library() {
     if (!window.confirm(`'${name}' 프레임워크를 삭제할까요?`)) return;
 
     try {
-      const res = await fetch(API_URL, {
+      const res = await fetch(`${API_BASE}/api/frameworks`, {
         method: "DELETE",
         headers: {
           Accept: "application/json",
